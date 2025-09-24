@@ -2,6 +2,8 @@ package com.toft.letsplay.model;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -11,6 +13,7 @@ public class User {
     private String Id;
 
     @NotBlank(message = "Name can't be empty")
+    @Size(min = 2, max = 50)
     private String name;
 
     @Email
@@ -18,10 +21,28 @@ public class User {
     private String email;
 
     @NotBlank(message = "Password can't be empty")
+    @Size(min = 3)
     private String password;
 
-    @NotBlank(message = "Please select a role")
+    @NotNull
     private String role;
 
-    // getters and setters
+
+    // Probably needs reworking later...
+    public String getId() {return Id;}
+    // MongoDB might generate ID automatically
+    // public void setId(Sting id) { this.is = id; }
+
+    public String getName() {return name;}
+    public void setName(String name) {this.name = name;}
+
+    public String getEmail() { return email;}
+    public void setEmail( String Email) { this.email = email;}
+
+    //Should this be returned?
+    public String getPassword() { return password; }
+    public void setPassword(String password) {this.password =password; }
+
+    public String getRole() { return role; }
+    public void setRole(String role) {this.role = role; }
 }

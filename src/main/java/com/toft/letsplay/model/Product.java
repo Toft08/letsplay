@@ -38,4 +38,5 @@ public class Product {
     public void setPrice(Double price) { this.price = price; }
 
     public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
 }

@@ -10,7 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "users")
 public class User {
     @Id
-    private String Id;
+    private String id;
 
     @NotBlank(message = "Name can't be empty")
     @Size(min = 2, max = 50)
@@ -29,7 +29,7 @@ public class User {
 
 
     // Probably needs reworking later...
-    public String getId() {return Id;}
+    public String getId() {return id;}
     // MongoDB might generate ID automatically
     // public void setId(Sting id) { this.is = id; }
 
@@ -37,7 +37,7 @@ public class User {
     public void setName(String name) {this.name = name;}
 
     public String getEmail() { return email;}
-    public void setEmail( String Email) { this.email = email;}
+    public void setEmail( String email) { this.email = email;}
 
     //Should this be returned?
     public String getPassword() { return password; }

@@ -27,6 +27,16 @@ public class User {
     @NotNull
     private String role;
 
+    public User() {}
+
+    public User(String id, String name, String email, String password, String role) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.role = role;
+    }
+
 
     // Probably needs reworking later...
     public String getId() {return id;}

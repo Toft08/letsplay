@@ -25,6 +25,17 @@ public class Product {
     @NotBlank(message = "Product userId can't be empty")
     private String userId;
 
+
+    public Product() {}
+
+    public Product(String id, String name, String description, double price, String userId) {
+    this.id = id;
+    this.name = name;
+    this.description = description;
+    this.price = price;
+    this.userId = userId;
+    }
+
     // Probably needs reworking later...
     public String getId() { return id;}
 

@@ -1,9 +1,19 @@
+# macOS
 .DS_Store
+
+# Maven
+/target/
+!.mvn/Wrapper/maven-wrapper.jar
+
 # Compiled class file
 *.class
 
 # Log file
 *.log
+
+# IDE
+.idea/
+*.iml
 
 # BlueJ files
 *.ctxt
@@ -23,3 +33,6 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+# Environment files
+.env

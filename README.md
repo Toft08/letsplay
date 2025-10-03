@@ -70,3 +70,71 @@ In order for auditors to test your program, you will have to run your project us
 ### Resources
 [Spring initializer](https://start.spring.io/)
 [Rest Documentation](https://docs.github.com/en/rest?apiVersion=2022-11-28)
+
+
+### Structure
+```
+letsplay/
+├── src/
+│   ├── main/
+│   │   ├── java/com/example/letsplay/
+│   │   │   ├── LetsPlayApplication.java      # Main entry point
+│   │   │   │
+│   │   │   ├── model/                        # Entities (MongoDB documents)
+│   │   │   │   ├── User.java
+│   │   │   │   └── Product.java
+│   │   │   │
+│   │   │   ├── repository/                   # MongoDB Repositories
+│   │   │   │   ├── UserRepository.java
+│   │   │   │   └── ProductRepository.java
+│   │   │   │
+│   │   │   ├── service/                      # Business logic
+│   │   │   │   ├── UserService.java
+│   │   │   │   └── ProductService.java
+│   │   │   │
+│   │   │   ├── controller/                   # REST Controllers
+│   │   │   │   ├── UserController.java
+│   │   │   │   └── ProductController.java
+│   │   │   │
+│   │   │   ├── security/                     # JWT + Spring Security config
+│   │   │   │   ├── SecurityConfig.java
+│   │   │   │   ├── JwtAuthenticationFilter.java
+│   │   │   │   ├── JwtUtil.java
+│   │   │   │   └── CustomUserDetailsService.java
+│   │   │   │
+│   │   │   ├── exception/                    # Centralized exception handling
+│   │   │   │   └── GlobalExceptionHandler.java
+│   │   │   │
+│   │   │   └── dto/                          # Data Transfer Objects (for API requests/responses)
+│   │   │       ├── LoginRequest.java
+│   │   │       ├── LoginResponse.java
+│   │   │       └── RegisterRequest.java
+│   │   │
+│   │   └── resources/
+│   │       ├── application.properties        # Config
+│   │       └── application-dev.properties    # (optional for dev env)
+│   │
+│   └── test/java/com/example/letsplay/       # Unit + Integration tests
+│       └── LetsPlayApplicationTests.java
+│
+├── .gitignore
+├── pom.xml                                  # Maven dependencies
+├── README.md
+└── todo.md                                  # Your planning file
+```
+
+What each folder does
+
+model/ → User and Product classes with @Document, @Id annotations.
+
+repository/ → extends MongoRepository<User, String> style interfaces.
+
+service/ → keeps business logic (don’t cram everything in controllers).
+
+controller/ → REST endpoints with @RestController.
+
+security/ → JWT filter, token utils, and role-based access config.
+
+dto/ → request/response objects (e.g. register, login). Keeps API clean.
+
+exception/ → @ControllerAdvice class that maps exceptions → HTTP responses (no 500s)

@@ -37,6 +37,9 @@ public class UserController{
 
     @DeleteMapping("/{id}")
     public void deleteUser(@PathVariable String id) {
+        if (!userService.existById(id)) {
+            throw new RuntimeException("User not found");
+        }
         userService.deleteUser(id);
     }
         }

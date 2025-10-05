@@ -4,6 +4,7 @@ import com.toft.letsplay.dto.UserDto;
 import com.toft.letsplay.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,13 +17,21 @@ public class UserController{
     private UserService userService;
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public List<UserDto> getAllUsers() {
         return userService.getAllUsers();
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public UserDto getUserById(@PathVariable String id) {
         return userService.getUserById(id);
+    }
+
+    @GetMapping("/me")
+    public UserDto getCurrentUser(org.springframework.security.core.Authentication authentication) {
+        String email = authentication.getName();
+        return userService.getUserByEmail(email);
     }
 
     @PostMapping

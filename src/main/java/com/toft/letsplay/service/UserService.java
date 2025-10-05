@@ -32,6 +32,12 @@ public class UserService {
         return userRepository.existsById(id);
     }
 
+    public UserDto getUserByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return toDto(user);
+    }
+
     public UserDto createUser(UserDto userDto) {
         User user = toEntity(userDto);
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));

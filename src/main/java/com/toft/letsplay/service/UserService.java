@@ -28,6 +28,10 @@ public class UserService {
         return toDto(user);
     }
 
+    public boolean existsById(String id) {
+        return userRepository.existsById(id);
+    }
+
     public UserDto createUser(UserDto userDto) {
         User user = toEntity(userDto);
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));

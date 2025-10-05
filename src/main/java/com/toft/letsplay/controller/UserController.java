@@ -5,6 +5,7 @@ import com.toft.letsplay.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -45,10 +46,19 @@ public class UserController{
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteUser(@PathVariable String id) {
         if (!userService.existsById(id)) {
             throw new RuntimeException("User not found");
         }
         userService.deleteUser(id);
     }
-        }
+
+    @DeleteMapping("/users/me")
+    @PreAuthorize("hasRole('USER')")
+    public void deleteCurrentUser(Authentication authentication) {
+        String email = authentication.getName();
+        UserDto user = userService.getUserByEmail(email);
+        userService.deleteUser(user.getId());
+    }
+}

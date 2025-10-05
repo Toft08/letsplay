@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import io.jsonwebtoken.security.Keys;
@@ -41,7 +42,7 @@ public class JwtUtil {
     }
 
     public String generateToken(String email, String role) {
-        UserDetails userDetails = org.springframework.security.core.userdetails.User
+        UserDetails userDetails = User
                 .withUsername(email)
                 .password("") //password not needed for JWT
                 .roles(role)

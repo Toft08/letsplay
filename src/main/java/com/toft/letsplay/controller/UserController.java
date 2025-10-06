@@ -55,7 +55,7 @@ public class UserController{
         userService.deleteUser(id);
     }
 
-    @DeleteMapping("/users/me")
+    @DeleteMapping("/me")
     @PreAuthorize("hasRole('USER')")
     public void deleteCurrentUser(Authentication authentication) {
         String email = authentication.getName();

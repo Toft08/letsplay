@@ -20,7 +20,6 @@ public class Initializer {
     @Bean
     CommandLineRunner initUsers(UserRepository userRepository, ProductRepository productRepository) {
         return args -> {
-            BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
             // Users
             if (userRepository.findByEmail("admin@ex.ax").isEmpty()) {
@@ -28,7 +27,7 @@ public class Initializer {
                         null,
                         "Admin",
                         "admin@ex.ax",
-                        encoder.encode("123!"),
+                        passwordEncoder.encode("123!"),
                         "ADMIN"
                 ));
             }
@@ -37,7 +36,7 @@ public class Initializer {
                         null,
                         "Uo",
                         "user1@ex.ax",
-                        encoder.encode("123!"),
+                        passwordEncoder.encode("123!"),
                         "USER"
                 ));
             }
@@ -46,7 +45,7 @@ public class Initializer {
                         null,
                         "Ut",
                         "user2@ex.ax",
-                        encoder.encode("123!"),
+                        passwordEncoder.encode("123!"),
                         "USER"
                 ));
             }
@@ -55,29 +54,29 @@ public class Initializer {
             User user1 = userRepository.findByEmail("user1@ex.ax").orElse(null);
             User user2 = userRepository.findByEmail("user2@ex.ax").orElse(null);
 
-            if (user1 != null && productRepository.findByUserId(user1.getId()).isEmpty()) {
+            if (user1 != null && productRepository.findByUser(user1.getEmail()).isEmpty()) {
                 productRepository.save(new Product(
                         null,
                         "Mako3",
                         "A straight flying disc",
                         15.0,
-                        user1.getId()
+                        user1.getEmail()
                 ));
                 productRepository.save(new Product(
                         null,
                         "Basket",
                         "Standard disc golf basket",
                         99.99,
-                        user1.getId()
+                        user1.getEmail()
                 ));
             }
-            if (user2 != null && productRepository.findByUserId(user2.getId()).isEmpty()) {
+            if (user2 != null && productRepository.findByUser(user2.getEmail()).isEmpty()) {
                 productRepository.save(new Product(
                         null,
                         "Darts",
                         "New set of darts from Mission",
                         60.50,
-                        user2.getId()
+                        user2.getEmail()
                 ));
             }
         };

@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 @Document(collection = "products")
 public class Product {
@@ -22,18 +23,18 @@ public class Product {
     @Positive(message = "Product price can't be negative")
     private Double price;
 
-    @NotBlank(message = "Product userId can't be empty")
-    private String userId;
+    @Field("user")
+    private String user;
 
 
     public Product() {}
 
-    public Product(String id, String name, String description, double price, String userId) {
+    public Product(String id, String name, String description, double price, String user) {
     this.id = id;
     this.name = name;
     this.description = description;
     this.price = price;
-    this.userId = userId;
+    this.user = user;
     }
 
     // Probably needs reworking later...
@@ -48,6 +49,6 @@ public class Product {
     public Double getPrice() {return price; }
     public void setPrice(Double price) { this.price = price; }
 
-    public String getUserId() { return userId; }
-    public void setUserId(String userId) { this.userId = userId; }
+    public String getUser() { return user; }
+    public void setUser(String user) { this.user = user; }
 }

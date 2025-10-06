@@ -1,10 +1,14 @@
 package com.toft.letsplay.service;
 
 import com.toft.letsplay.dto.UserDto;
+import com.toft.letsplay.exception.BadRequestException;
+import com.toft.letsplay.exception.ForbiddenException;
+import com.toft.letsplay.exception.ResourceNotFoundException;
 import com.toft.letsplay.model.User;
 import com.toft.letsplay.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,7 +20,8 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    private  final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public List<UserDto> getAllUsers() {
         return userRepository.findAll().stream().map(this::toDto).collect(Collectors.toList());
@@ -24,7 +29,7 @@ public class UserService {
 
     public UserDto getUserById(String id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
         return toDto(user);
     }
 
@@ -34,11 +39,15 @@ public class UserService {
 
     public UserDto getUserByEmail(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with this email: " + email));
         return toDto(user);
     }
 
     public UserDto createUser(UserDto userDto) {
+        if (userRepository.findByEmail(userDto.getEmail()).isPresent()) {
+            throw new BadRequestException("User with email " + userDto.getEmail() + " already exists");
+        }
+
         User user = toEntity(userDto);
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         User saved = userRepository.save(user);
@@ -47,7 +56,7 @@ public class UserService {
 
     public UserDto updateUser(String id, UserDto userDto) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
         user.setName(userDto.getName());
         user.setEmail(userDto.getEmail());
         user.setRole(userDto.getRole());
@@ -60,9 +69,9 @@ public class UserService {
 
     public void deleteUser(String id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
         if ("ADMIN".equalsIgnoreCase(user.getRole())) {
-            throw new RuntimeException("Admin user cannot be deleted");
+            throw new ForbiddenException("Admin user cannot be deleted");
         }
         userRepository.deleteById(id);
     }

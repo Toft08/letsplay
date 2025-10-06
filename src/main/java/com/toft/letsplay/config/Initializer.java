@@ -4,13 +4,18 @@ import com.toft.letsplay.model.Product;
 import com.toft.letsplay.model.User;
 import com.toft.letsplay.repository.ProductRepository;
 import com.toft.letsplay.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 public class Initializer {
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Bean
     CommandLineRunner initUsers(UserRepository userRepository, ProductRepository productRepository) {

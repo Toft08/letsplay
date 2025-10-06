@@ -1,6 +1,7 @@
 package com.toft.letsplay.controller;
 
 import com.toft.letsplay.dto.UserDto;
+import com.toft.letsplay.exception.ResourceNotFoundException;
 import com.toft.letsplay.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +31,7 @@ public class UserController{
     }
 
     @GetMapping("/me")
-    public UserDto getCurrentUser(org.springframework.security.core.Authentication authentication) {
+    public UserDto getCurrentUser(Authentication authentication) {
         String email = authentication.getName();
         return userService.getUserByEmail(email);
     }
@@ -49,7 +50,7 @@ public class UserController{
     @PreAuthorize("hasRole('ADMIN')")
     public void deleteUser(@PathVariable String id) {
         if (!userService.existsById(id)) {
-            throw new RuntimeException("User not found");
+            throw new ResourceNotFoundException("User not found with id:" + id);
         }
         userService.deleteUser(id);
     }

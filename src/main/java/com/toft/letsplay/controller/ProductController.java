@@ -1,5 +1,6 @@
 package com.toft.letsplay.controller;
 
+import com.toft.letsplay.exception.ResourceNotFoundException;
 import com.toft.letsplay.model.Product;
 import com.toft.letsplay.repository.ProductRepository;
 import jakarta.validation.Valid;
@@ -22,7 +23,7 @@ public class ProductController {
     @GetMapping("/{id}")
     public Product getProductById(@PathVariable String id) {
         return productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with this id:" + id));
     }
 
     @PostMapping
@@ -33,7 +34,7 @@ public class ProductController {
     @PutMapping("/{id}")
     public Product updateProduct(@PathVariable String id, @Valid @RequestBody Product product) {
         Product existing =productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with this id:" + id));
         existing.setName(product.getName());
         existing.setDescription(product.getDescription());
         existing.setPrice(product.getPrice());
@@ -44,7 +45,7 @@ public class ProductController {
     @DeleteMapping("/{id}")
     public void deleteProduct(@PathVariable String id) {
         if (!productRepository.existsById(id)) {
-            throw new RuntimeException("Product not found");
+            throw new ResourceNotFoundException("Product not found with this id:" + id);
         }
         productRepository.deleteById(id);
     }

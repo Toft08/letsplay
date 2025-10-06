@@ -36,3 +36,8 @@ replay_pid*
 
 # Environment files
 .env
+
+# SSL Certificates
+*.p12
+*.jks
+keystore.*

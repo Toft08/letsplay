@@ -7,6 +7,7 @@ import com.toft.letsplay.exception.ResourceNotFoundException;
 import com.toft.letsplay.model.User;
 import com.toft.letsplay.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -54,12 +55,22 @@ public class UserService {
         return toDto(saved);
     }
 
-    public UserDto updateUser(String id, UserDto userDto) {
+    public UserDto updateUser(String id, UserDto userDto, Authentication authentication) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+
+        String currentUserEmail = authentication.getName();
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
+
+        if (!isAdmin && !user.getEmail().equals(currentUserEmail)) {
+            throw new ForbiddenException("You can only update your own profile");
+        }
+
         user.setName(userDto.getName());
         user.setEmail(userDto.getEmail());
-        user.setRole(userDto.getRole());
+        // No one can change the role
+
         if (userDto.getPassword() != null && !userDto.getPassword().isEmpty()) {
             user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         }

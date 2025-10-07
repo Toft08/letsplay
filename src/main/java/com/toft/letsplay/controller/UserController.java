@@ -31,6 +31,7 @@ public class UserController{
     }
 
     @GetMapping("/me")
+    @PreAuthorize("isAuthenticated()")
     public UserDto getCurrentUser(Authentication authentication) {
         String email = authentication.getName();
         return userService.getUserByEmail(email);
@@ -42,6 +43,7 @@ public class UserController{
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public UserDto updateUser(@PathVariable String id, @Valid @RequestBody UserDto userDto) {
         return  userService.updateUser(id, userDto);
     }

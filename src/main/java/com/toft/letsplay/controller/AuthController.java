@@ -50,7 +50,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public Map<String, Object> register(@Valid @RequestBody UserDto userDto) {
+    public Map<String, Object> register(@RequestBody UserDto userDto) {
         if (userDto.getRole() == null || userDto.getRole().isEmpty()) {
             userDto.setRole("USER");
         }

@@ -44,8 +44,8 @@ public class UserController{
 
     @PutMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
-    public UserDto updateUser(@PathVariable String id, @Valid @RequestBody UserDto userDto) {
-        return  userService.updateUser(id, userDto);
+    public UserDto updateUser(@PathVariable String id, @Valid @RequestBody UserDto userDto, Authentication authentication) {
+        return  userService.updateUser(id, userDto, authentication);
     }
 
     @DeleteMapping("/{id}")

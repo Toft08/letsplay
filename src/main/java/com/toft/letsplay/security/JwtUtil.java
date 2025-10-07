@@ -20,7 +20,9 @@ public class JwtUtil {
     @Value("${application.security.jwt.secret-key}")
     private String secretKey;
 
-    private final long jwtExpirationMs = 86400000; // 1 day, might change to 15 min
+    // private final long jwtExpirationMs = 86400000; // 1 day
+    private final long jwtExpirationMs = 9000000; // 15 min
+    // private final long jwtExpirationMs = 60000; // 1 min
 
     private Key getSigningKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);

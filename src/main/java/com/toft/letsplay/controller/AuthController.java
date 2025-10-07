@@ -5,6 +5,7 @@ import com.toft.letsplay.exception.UnauthorizedException;
 import com.toft.letsplay.model.User;
 import com.toft.letsplay.repository.UserRepository;
 import com.toft.letsplay.security.JwtUtil;
+import com.toft.letsplay.security.TokenBlacklist;
 import com.toft.letsplay.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,4 +69,15 @@ public class AuthController {
                 "message", "User registered successfully"
         );
     }
+
+    @Autowired
+    private TokenBlacklist tokenBlacklist;
+
+    @PostMapping("/logout")
+    public Map<String, String> logout(@RequestBody Map<String, String> tokenMap) {
+        String token = tokenMap.get("token");
+        tokenBlacklist.blackList(token);
+        return Map.of("message", "Logged out successfully");
+    }
+
 }

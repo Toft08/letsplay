@@ -23,6 +23,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
     @Autowired
     private CustomUserDetailsService userDetailsService;
 
+    @Autowired
+    private TokenBlacklist tokenBlacklist;
+
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
         throws ServletException, IOException {
@@ -32,6 +36,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
 
         if (header != null && header.startsWith("Bearer ")) {
             token = header.substring(7);
+
+            if (tokenBlacklist.isBlackListed(token)) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Token has been invalidated. Please log in again.");
+                return; // Stop processing further
+            }
+
             username = jwtUtil.extractUsername(token);
         }
 

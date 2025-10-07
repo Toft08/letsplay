@@ -138,3 +138,13 @@ security/ → JWT filter, token utils, and role-based access config.
 dto/ → request/response objects (e.g. register, login). Keeps API clean.
 
 exception/ → @ControllerAdvice class that maps exceptions → HTTP responses (no 500s)
+
+## Generate a new self-signed certificate for development
+```
+keytool -genkeypair -alias letsplay -keyalg RSA -keysize 2048 -storetype PKCS12 -keystore src/main/resources/keystore.p12 -validity 3650 -storepass changeit -dname "CN=localhost, OU=Development, O=Letsplay, L=City, ST=State, C=US"
+  ```
+
+# Requirements
+- Java 17
+- Maven
+- MongoDB

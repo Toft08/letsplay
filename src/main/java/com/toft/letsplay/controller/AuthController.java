@@ -7,8 +7,12 @@ import com.toft.letsplay.repository.UserRepository;
 import com.toft.letsplay.security.JwtUtil;
 import com.toft.letsplay.security.TokenBlacklist;
 import com.toft.letsplay.service.UserService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -34,7 +38,7 @@ public class AuthController {
     private PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
-    public Map<String, String> login(@RequestBody Map<String, String> loginData) {
+    public ResponseEntity<Map<String, String>> login(@RequestBody Map<String, String> loginData) {
         String email = loginData.get("email");
         String password = loginData.get("password");
 
@@ -46,11 +50,23 @@ public class AuthController {
         }
 
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
-        return Map.of("token", token);
+        
+        // Create HttpOnly cookie for the JWT token
+        ResponseCookie jwtCookie = ResponseCookie.from("jwt", token)
+                .httpOnly(true)
+                .secure(true) // Use HTTPS
+                .sameSite("Strict")
+                .maxAge(24 * 60 * 60) // 24 hours
+                .path("/")
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+                .body(Map.of("token", token, "message", "Login successful"));
     }
 
     @PostMapping("/register")
-    public Map<String, Object> register(@RequestBody UserDto userDto) {
+    public ResponseEntity<Map<String, Object>> register(@RequestBody UserDto userDto) {
         if (userDto.getRole() == null || userDto.getRole().isEmpty()) {
             userDto.setRole("USER");
         }
@@ -62,24 +78,64 @@ public class AuthController {
         UserDto createdUser = userService.createUser(userDto);
         String token = jwtUtil.generateToken(createdUser.getEmail(), createdUser.getRole());
 
-        return Map.of(
-                "user", createdUser,
-                "token", token,
-                "message", "User registered successfully"
-        );
+        // Create HttpOnly cookie for the JWT token
+        ResponseCookie jwtCookie = ResponseCookie.from("jwt", token)
+                .httpOnly(true)
+                .secure(true) // Use HTTPS
+                .sameSite("Strict")
+                .maxAge(24 * 60 * 60) // 24 hours
+                .path("/")
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+                .body(Map.of(
+                        "user", createdUser,
+                        "token", token,
+                        "message", "User registered successfully"
+                ));
     }
 
     @Autowired
     private TokenBlacklist tokenBlacklist;
 
     @PostMapping("/logout")
-    public ResponseEntity<String> logout(@RequestHeader("Authorization") String header) {
+    public ResponseEntity<String> logout(HttpServletRequest request, @RequestHeader(value = "Authorization", required = false) String header) {
+        String token = null;
+        
+        // Try to get token from Authorization header first
         if (header != null && header.startsWith("Bearer ")) {
-            String token = header.substring(7);
-            Date expiry = jwtUtil.extractExpiration(token); // extract expiry from JWT
+            token = header.substring(7);
+        } else {
+            // Try to get token from cookie
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if ("jwt".equals(cookie.getName())) {
+                        token = cookie.getValue();
+                        break;
+                    }
+                }
+            }
+        }
+        
+        if (token != null) {
+            Date expiry = jwtUtil.extractExpiration(token);
             tokenBlacklist.blacklistToken(token, expiry);
         }
-        return ResponseEntity.ok("Logged out successfully.");
+        
+        // Clear the JWT cookie
+        ResponseCookie clearCookie = ResponseCookie.from("jwt", "")
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("Strict")
+                .maxAge(0) // Expire immediately
+                .path("/")
+                .build();
+        
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, clearCookie.toString())
+                .body("Logged out successfully.");
     }
 
 

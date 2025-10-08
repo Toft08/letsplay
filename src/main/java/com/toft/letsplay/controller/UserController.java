@@ -7,6 +7,8 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -51,18 +53,19 @@ public class UserController{
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public void deleteUser(@PathVariable String id) {
+    public void deleteUser(@PathVariable String id, @AuthenticationPrincipal UserDetails userDetails) {
         if (!userService.existsById(id)) {
             throw new ResourceNotFoundException("User not found with id:" + id);
         }
-        userService.deleteUser(id);
+        
+        userService.deleteUser(id, userDetails);
     }
 
     @DeleteMapping("/me")
     @PreAuthorize("hasRole('USER')")
-    public void deleteCurrentUser(Authentication authentication) {
-        String email = authentication.getName();
+    public void deleteCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
+        String email = userDetails.getUsername();
         UserDto user = userService.getUserByEmail(email);
-        userService.deleteUser(user.getId());
+        userService.deleteUser(user.getId(), userDetails);
     }
 }

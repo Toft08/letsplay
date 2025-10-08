@@ -2,6 +2,7 @@ package com.toft.letsplay.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,9 +35,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
         String token = null;
         String username = null;
 
+        // Try to get token from Authorization header first
         if (header != null && header.startsWith("Bearer ")) {
             token = header.substring(7);
+        } else {
+            // Try to get token from cookie
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if ("jwt".equals(cookie.getName())) {
+                        token = cookie.getValue();
+                        break;
+                    }
+                }
+            }
+        }
 
+        if (token != null) {
             if (tokenBlacklist.isBlacklisted(token)) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.getWriter().write("Token has been invalidated. Please log in again.");

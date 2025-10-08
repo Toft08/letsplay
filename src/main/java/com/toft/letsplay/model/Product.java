@@ -23,18 +23,18 @@ public class Product {
     @Positive(message = "Product price can't be negative")
     private Double price;
 
-    @Field("user")
-    private String user;
+    @Field("userId")
+    private String userId;
 
 
     public Product() {}
 
-    public Product(String id, String name, String description, double price, String user) {
+    public Product(String id, String name, String description, double price, String userId) {
     this.id = id;
     this.name = name;
     this.description = description;
     this.price = price;
-    this.user = user;
+    this.userId = userId;
     }
 
     // Probably needs reworking later...
@@ -49,6 +49,6 @@ public class Product {
     public Double getPrice() {return price; }
     public void setPrice(Double price) { this.price = price; }
 
-    public String getUser() { return user; }
-    public void setUser(String user) { this.user = user; }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
 }

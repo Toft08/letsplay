@@ -6,11 +6,14 @@ import com.toft.letsplay.exception.ForbiddenException;
 import com.toft.letsplay.exception.ResourceNotFoundException;
 import com.toft.letsplay.model.User;
 import com.toft.letsplay.repository.UserRepository;
+import com.toft.letsplay.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,7 +25,17 @@ public class UserService {
     private UserRepository userRepository;
 
     @Autowired
+    private ProductRepository productRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
+
+    // Helper method to get User from UserDetails
+    private User getUserFromUserDetails(UserDetails userDetails) {
+        String email = userDetails.getUsername();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Authenticated user not found in database"));
+    }
 
     public List<UserDto> getAllUsers() {
         return userRepository.findAll().stream().map(this::toDto).collect(Collectors.toList());
@@ -67,6 +80,15 @@ public class UserService {
             throw new ForbiddenException("You can only update your own profile");
         }
 
+        // Check if the new email is already taken by another user
+        if (!user.getEmail().equals(userDto.getEmail())) {
+            userRepository.findByEmail(userDto.getEmail()).ifPresent(existingUser -> {
+                if (!existingUser.getId().equals(id)) {
+                    throw new BadRequestException("Email " + userDto.getEmail() + " is already taken by another user");
+                }
+            });
+        }
+
         user.setName(userDto.getName());
         user.setEmail(userDto.getEmail());
         // No one can change the role
@@ -78,12 +100,19 @@ public class UserService {
         return toDto(updated);
     }
 
-    public void deleteUser(String id) {
+    @Transactional
+    public void deleteUser(String id, UserDetails userDetails) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+        
         if ("ADMIN".equalsIgnoreCase(user.getRole())) {
             throw new ForbiddenException("Admin user cannot be deleted");
         }
+        
+        // Delete all products associated with this user first (by user ID)
+        productRepository.deleteByUserId(id);
+        
+        // Then delete the user
         userRepository.deleteById(id);
     }
 

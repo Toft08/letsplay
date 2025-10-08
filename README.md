@@ -1,150 +1,157 @@
 # letsplay
-Github repo for the lets-play project at grit:lab
 
-## Copied task description
+A RESTful CRUD API for user and product management, built with Spring Boot, MongoDB, and JWT authentication.
 
-### Objectives
+## Features
 
-You will be developing a basic CRUD (Create, Read, Update, Delete) API using Spring Boot with MongoDB, and it should adhere to RESTful principles. The application will contain user management and product management functionalities.
+- **User Management:**  
+  - Register via `/auth/register`
+  - Login via `/auth/login`
+  - View/update/delete own profile via `/users/me`
+  - Admin can manage all users (except admin cannot be deleted)
+  - `POST /users` is admin-only (for admin to create users)
+- **Product Management:**  
+  - Create, read, update, delete products
+  - Only owner or admin can modify/delete
+  - Public can view products
+- **Authentication:**  
+  - JWT-based login and registration
+  - Logout via `/auth/logout` (JWT token is blacklisted)
+- **Authorization:**  
+  - Role-based access (`USER`, `ADMIN`)
+  - Only one admin, all others are users
+- **Security:**  
+  - BCrypt password hashing
+  - Input validation
+  - Sensitive info protection (no passwords in responses)
+  - HTTPS ready
+  - JWT token blacklist for logout
+- **Error Handling:**  
+  - Centralized exception handler
+  - No 5XX errors, proper HTTP status codes
+- **CORS:**  
+  - Configured for local development
+- **MongoDB:**  
+  - Used for persistent storage
 
-### Instructions
+## Quick Start
 
-#### 1. Database Design
+### Prerequisites
 
-```mermaid
-classDiagram
-    User "1" -- "n" Product : Owns
-    User : +String id
-    User : +String name
-    User : +String email
-    User : +String password
-    User : +String role
-    Product : +String id
-    Product : +String name
-    Product : +String description
-    Product : +Double price
-    Product : +String userId
-```
+- Java 17+
+- Maven
+- MongoDB (local or Docker: `docker run -d -p 27017:27017 mongo`)
 
-#### 2. API Development
+### Running the Project
 
-You should provide a set of RESTful APIs to perform CRUD operations on both Users and Products. The APIs should be designed according to the REST standard. The "GET Products" API should be accessible without authentication.
+1. **Clone the repo:**
+   ```sh
+   git clone <your-repo-url>
+   cd letsplay
+   ```
 
-#### 3. Authentication & Authorization
+2. **Start MongoDB** (if not running):
+   ```sh
+   docker run -d -p 27017:27017 mongo
+   ```
 
-Implement a token-based authentication system. Only authenticated users can access the APIs. The users can have different roles (admin or user), and the API access should be controlled based on the user roles.
+3. **Build and run:**
+   ```sh
+   ./mvnw spring-boot:run
+   ```
 
-> 💡 Spring Security 
+4. **API is available at:**  
+   `https://localhost:8443` (HTTPS, self-signed cert for dev)
 
-#### 4. Error Handling
+### API Endpoints
 
-The API should not return any 5XX errors. You should handle any possible exceptions and return appropriate HTTP response codes and messages.
+#### Auth
 
-#### 5. Security Measures
+- `POST /auth/login` — Login, returns JWT
+- `POST /auth/register` — Register, returns JWT
+- `POST /auth/logout` — Logout, blacklists JWT token
 
-Implement the following security measures:
+#### Users
 
-- Hash and salt passwords before storing them in the database.
-- Validate inputs to prevent MongoDB injection attacks.
-- Protect sensitive user information. Don't return passwords or other sensitive information in your API responses.
-- Use HTTPS to protect data in transit.
+- `GET /users` — List all users (admin only)
+- `GET /users/{id}` — Get user by ID (admin only)
+- `GET /users/me` — Get current user's info
+- `POST /users` — Create user (admin only)
+- `PUT /users/{id}` — Update user (admin or self)
+- `DELETE /users/{id}` — Delete user (admin only, cannot delete admin)
+- `DELETE /users/me` — Delete own account
 
-### Bonus 
+#### Products
 
-As an additional challenge, you could consider implementing the following features. Note that these are not required for the completion of the project but would provide additional learning opportunities:
+- `GET /products` — List all products (public)
+- `GET /products/{id}` — Get product by ID (public)
+- `POST /products` — Create product (authenticated)
+- `PUT /products/{id}` — Update product (owner or admin)
+- `DELETE /products/{id}` — Delete product (owner or admin)
+- `GET /products/my-products` — List current user's products
 
-- **Set appropriate CORS policies:** Implement Cross-Origin Resource Sharing (CORS) policies to manage the security of your application when it is accessed from different domains.
-- **Implement rate limiting to prevent brute force attacks:** Use rate limiting to restrict the number of API requests a client can make in a given time. This can help prevent attacks and misuse of your application.
+### Security
+
+- **JWT:** All protected endpoints require `Authorization: Bearer <token>`.
+- **Roles:** Only admin can manage users; users can only manage their own profile and products.
+- **Password:** Hashed with BCrypt.
+- **HTTPS:** Configured for production.
+- **CORS:** Configured for local frontend development.
+- **Logout:** Blacklists JWT token so it cannot be reused.
+
+### Error Handling
+
+- All errors return structured JSON with status, error, message, and path.
+- No 5XX errors; all exceptions handled.
 
 ### Testing
 
-Your project will be extensively tested for the following aspects:
+- Use Postman or similar tool.
+- Register/login to get JWT.
+- Test all endpoints with and without JWT.
+- Try error scenarios (invalid credentials, unauthorized access, etc.).
+- Test logout: after calling `/auth/logout`, the token is blacklisted and cannot be used.
 
-- Correctness of the APIs.
-- Proper implementation of authentication and authorization.
-- The absence of 5XX errors.
-- Implementation of the above-mentioned security measures.
+### Bonus
 
-In order for auditors to test your program, you will have to run your project using a code editor or provide a script to run it.
+- **CORS:** Configured.
+- **Rate Limiting:** Not implemented (can be added as a filter).
 
-### Resources
-[Spring initializer](https://start.spring.io/)
-[Rest Documentation](https://docs.github.com/en/rest?apiVersion=2022-11-28)
+## Project Structure
 
-
-### Structure
 ```
 letsplay/
 ├── src/
 │   ├── main/
-│   │   ├── java/com/example/letsplay/
-│   │   │   ├── LetsPlayApplication.java      # Main entry point
-│   │   │   │
-│   │   │   ├── model/                        # Entities (MongoDB documents)
-│   │   │   │   ├── User.java
-│   │   │   │   └── Product.java
-│   │   │   │
-│   │   │   ├── repository/                   # MongoDB Repositories
-│   │   │   │   ├── UserRepository.java
-│   │   │   │   └── ProductRepository.java
-│   │   │   │
-│   │   │   ├── service/                      # Business logic
-│   │   │   │   ├── UserService.java
-│   │   │   │   └── ProductService.java
-│   │   │   │
-│   │   │   ├── controller/                   # REST Controllers
-│   │   │   │   ├── UserController.java
-│   │   │   │   └── ProductController.java
-│   │   │   │
-│   │   │   ├── security/                     # JWT + Spring Security config
-│   │   │   │   ├── SecurityConfig.java
-│   │   │   │   ├── JwtAuthenticationFilter.java
-│   │   │   │   ├── JwtUtil.java
-│   │   │   │   └── CustomUserDetailsService.java
-│   │   │   │
-│   │   │   ├── exception/                    # Centralized exception handling
-│   │   │   │   └── GlobalExceptionHandler.java
-│   │   │   │
-│   │   │   └── dto/                          # Data Transfer Objects (for API requests/responses)
-│   │   │       ├── LoginRequest.java
-│   │   │       ├── LoginResponse.java
-│   │   │       └── RegisterRequest.java
-│   │   │
+│   │   ├── java/com/toft/letsplay/
+│   │   │   ├── model/        # User, Product
+│   │   │   ├── repository/   # UserRepository, ProductRepository, BlacklistedTokenRepository
+│   │   │   ├── service/      # UserService, ProductService
+│   │   │   ├── controller/   # UserController, ProductController, AuthController
+│   │   │   ├── security/     # SecurityConfig, JwtUtil, JwtAuthenticationFilter, CustomUserDetailsService, TokenBlacklist, BlacklistedToken
+│   │   │   ├── exception/    # GlobalExceptionHandler, custom exceptions
+│   │   │   ├── dto/          # UserDto, ProductDto
 │   │   └── resources/
-│   │       ├── application.properties        # Config
-│   │       └── application-dev.properties    # (optional for dev env)
-│   │
-│   └── test/java/com/example/letsplay/       # Unit + Integration tests
-│       └── LetsPlayApplicationTests.java
-│
+│   │       ├── application.properties
+│   │       └── keystore.p12  # Self-signed cert for HTTPS
+│   └── test/java/com/toft/letsplay/
+│       └── LetsplayApplicationTests.java
 ├── .gitignore
-├── pom.xml                                  # Maven dependencies
+├── pom.xml
 ├── README.md
-└── todo.md                                  # Your planning file
+└── TODO.md
 ```
-
-What each folder does
-
-model/ → User and Product classes with @Document, @Id annotations.
-
-repository/ → extends MongoRepository<User, String> style interfaces.
-
-service/ → keeps business logic (don’t cram everything in controllers).
-
-controller/ → REST endpoints with @RestController.
-
-security/ → JWT filter, token utils, and role-based access config.
-
-dto/ → request/response objects (e.g. register, login). Keeps API clean.
-
-exception/ → @ControllerAdvice class that maps exceptions → HTTP responses (no 500s)
 
 ## Generate a new self-signed certificate for development
 ```
 keytool -genkeypair -alias letsplay -keyalg RSA -keysize 2048 -storetype PKCS12 -keystore src/main/resources/keystore.p12 -validity 3650 -storepass changeit -dname "CN=localhost, OU=Development, O=Letsplay, L=City, ST=State, C=US"
-  ```
+```
 
-# Requirements
+## Requirements
 - Java 17
 - Maven
 - MongoDB
+
+---
+
+**Ready for audit and production use.**

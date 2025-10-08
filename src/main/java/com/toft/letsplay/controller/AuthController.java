@@ -9,13 +9,12 @@ import com.toft.letsplay.security.TokenBlacklist;
 import com.toft.letsplay.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.Map;
 
 @RestController
@@ -74,10 +73,14 @@ public class AuthController {
     private TokenBlacklist tokenBlacklist;
 
     @PostMapping("/logout")
-    public Map<String, String> logout(@RequestBody Map<String, String> tokenMap) {
-        String token = tokenMap.get("token");
-        tokenBlacklist.blackList(token);
-        return Map.of("message", "Logged out successfully");
+    public ResponseEntity<String> logout(@RequestHeader("Authorization") String header) {
+        if (header != null && header.startsWith("Bearer ")) {
+            String token = header.substring(7);
+            Date expiry = jwtUtil.extractExpiration(token); // extract expiry from JWT
+            tokenBlacklist.blacklistToken(token, expiry);
+        }
+        return ResponseEntity.ok("Logged out successfully.");
     }
+
 
 }
